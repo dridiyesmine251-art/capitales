@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capitales du Monde</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0f0f1a;
+    --card: #1a1a2e;
+    --card-hover: #22223a;
+    --accent: #6c63ff;
+    --accent2: #ff6584;
+    --accent3: #43e97b;
+    --text: #e8e8f0;
+    --text-dim: #8888aa;
+    --success: #43e97b;
+    --error: #ff6584;
+    --gold: #ffd700;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Animated background ── */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(ellipse at 30% 20%, rgba(108,99,255,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 80%, rgba(255,101,132,0.06) 0%, transparent 50%);
+    animation: bgShift 20s ease-in-out infinite alternate;
+    z-index: 0;
+    pointer-events: none;
+  }
+  @keyframes bgShift {
+    0% { transform: translate(0,0) rotate(0deg); }
+    100% { transform: translate(-5%,3%) rotate(3deg); }
+  }
+
+  .app {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    padding: 40px 0 20px;
+  }
+  .header h1 {
+    font-size: 2.4rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 6px;
+  }
+  .header p {
+    color: var(--text-dim);
+    font-size: 1rem;
+  }
+
+  /* ── Breadcrumb / Back ── */
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(108,99,255,0.1);
+    border: 1px solid rgba(108,99,255,0.2);
+    color: var(--accent);
+    padding: 10px 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    margin-bottom: 24px;
+  }
+  .back-btn:hover {
+    background: rgba(108,99,255,0.2);
+    transform: translateX(-3px);
+  }
+
+  /* ── Continent grid ── */
+  .continent-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+    margin-top: 30px;
+  }
+  .continent-card {
+    background: var(--card);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 16px;
+    padding: 28px 24px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .continent-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .continent-card:hover {
+    transform: translateY(-4px);
+    background: var(--card-hover);
+    border-color: rgba(108,99,255,0.3);
+    box-shadow: 0 12px 40px rgba(108,99,255,0.15);
+  }
+  .continent-card:hover::before { opacity: 1; }
+  .continent-emoji {
+    font-size: 2.8rem;
+    margin-bottom: 12px;
+    display: block;
+  }
+  .continent-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .continent-count {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+
+  /* ── Mode selection ── */
+  .mode-selection {
+    display: flex;
+    gap: 16px;
+    margin-top: 30px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .mode-card {
+    background: var(--card);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 16px;
+    padding: 36px 40px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+    text-align: center;
+    flex: 1;
+    max-width: 320px;
+    min-width: 220px;
+  }
+  .mode-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(108,99,255,0.15);
+  }
+  .mode-card.revise { border-top: 3px solid var(--accent); }
+  .mode-card.revise:hover { background: rgba(108,99,255,0.08); }
+  .mode-card.test { border-top: 3px solid var(--accent2); }
+  .mode-card.test:hover { background: rgba(255,101,132,0.08); }
+  .mode-icon { font-size: 2.5rem; margin-bottom: 12px; display: block; }
+  .mode-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 6px; }
+  .mode-desc { color: var(--text-dim); font-size: 0.9rem; }
+
+  /* ── Flashcard ── */
+  .flashcard-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+  }
+  .progress-bar-container {
+    width: 100%;
+    max-width: 560px;
+    margin-bottom: 20px;
+  }
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+  .progress-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent3));
+    border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+
+  .flashcard-container {
+    perspective: 1000px;
+    width: 100%;
+    max-width: 560px;
+    height: 320px;
+    margin-bottom: 24px;
+    cursor: pointer;
+  }
+  .flashcard {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transition: transform 0.6s cubic-bezier(0.4,0,0.2,1);
+    transform-style: preserve-3d;
+  }
+  .flashcard.flipped {
+    transform: rotateY(180deg);
+  }
+  .flashcard-face {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 30px;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .flashcard-front {
+    background: linear-gradient(145deg, #1e1e36, #1a1a2e);
+  }
+  .flashcard-back {
+    background: linear-gradient(145deg, #1a2e1e, #162e28);
+    transform: rotateY(180deg);
+  }
+  .flashcard-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+    font-weight: 600;
+  }
+  .flashcard-text {
+    font-size: 2rem;
+    font-weight: 800;
+    text-align: center;
+    line-height: 1.3;
+  }
+  .flashcard-hint {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    margin-top: 20px;
+  }
+
+  .flashcard-buttons {
+    display: flex;
+    gap: 16px;
+    width: 100%;
+    max-width: 560px;
+  }
+  .fc-btn {
+    flex: 1;
+    padding: 16px;
+    border-radius: 14px;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .fc-btn.wrong {
+    background: rgba(255,101,132,0.12);
+    color: var(--error);
+    border: 1px solid rgba(255,101,132,0.25);
+  }
+  .fc-btn.wrong:hover {
+    background: rgba(255,101,132,0.22);
+    transform: scale(1.02);
+  }
+  .fc-btn.correct {
+    background: rgba(67,233,123,0.12);
+    color: var(--success);
+    border: 1px solid rgba(67,233,123,0.25);
+  }
+  .fc-btn.correct:hover {
+    background: rgba(67,233,123,0.22);
+    transform: scale(1.02);
+  }
+
+  /* ── Round summary ── */
+  .round-summary {
+    text-align: center;
+    max-width: 560px;
+    margin: 20px auto;
+  }
+  .round-summary h2 {
+    font-size: 1.6rem;
+    margin-bottom: 10px;
+  }
+  .round-summary p {
+    color: var(--text-dim);
+    margin-bottom: 20px;
+    font-size: 1rem;
+  }
+  .error-list {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    text-align: left;
+  }
+  .error-list h3 {
+    color: var(--error);
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+  }
+  .error-item {
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 0.95rem;
+  }
+  .error-item:last-child { border-bottom: none; }
+  .error-item span.country { color: var(--text-dim); }
+  .error-item span.capital { color: var(--accent); font-weight: 600; }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), #5a52e0);
+    color: #fff;
+    padding: 14px 36px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 700;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.2s;
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(108,99,255,0.3);
+  }
+
+  /* ── Revision Complete ── */
+  .revision-complete {
+    text-align: center;
+    margin-top: 40px;
+  }
+  .revision-complete .big-emoji { font-size: 4rem; margin-bottom: 16px; display: block; }
+  .revision-complete h2 {
+    font-size: 1.8rem;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--success), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .revision-complete p { color: var(--text-dim); margin-bottom: 24px; }
+
+  /* ── Test mode ── */
+  .test-area {
+    max-width: 560px;
+    margin: 20px auto;
+    text-align: center;
+  }
+  .test-question-box {
+    background: var(--card);
+    border-radius: 20px;
+    padding: 40px 30px;
+    margin-bottom: 24px;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .test-question-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+    font-weight: 600;
+  }
+  .test-country-name {
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+  .test-input-group {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .test-input {
+    flex: 1;
+    padding: 16px 20px;
+    border-radius: 14px;
+    border: 2px solid rgba(255,255,255,0.08);
+    background: var(--card);
+    color: var(--text);
+    font-size: 1.1rem;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .test-input:focus {
+    border-color: var(--accent);
+  }
+  .test-input.correct-input {
+    border-color: var(--success);
+    background: rgba(67,233,123,0.06);
+  }
+  .test-input.wrong-input {
+    border-color: var(--error);
+    background: rgba(255,101,132,0.06);
+  }
+  .test-submit {
+    padding: 16px 28px;
+    border-radius: 14px;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.2s;
+  }
+  .test-submit:hover { background: #5a52e0; }
+  .test-feedback {
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .test-feedback.correct-fb { color: var(--success); }
+  .test-feedback.wrong-fb { color: var(--error); }
+  .test-score-bar {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 8px;
+    font-size: 0.9rem;
+    color: var(--text-dim);
+  }
+  .test-score-bar span b {
+    color: var(--text);
+  }
+
+  /* ── Fireworks Canvas ── */
+  #fireworksCanvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 9999;
+    pointer-events: none;
+  }
+
+  /* ── Congrats overlay ── */
+  .congrats-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+  }
+  .congrats-box {
+    background: rgba(15,15,26,0.95);
+    backdrop-filter: blur(20px);
+    border: 2px solid var(--gold);
+    border-radius: 24px;
+    padding: 50px 60px;
+    text-align: center;
+    pointer-events: auto;
+    animation: congratsPop 0.6s cubic-bezier(0.175,0.885,0.32,1.275);
+    box-shadow: 0 0 60px rgba(255,215,0,0.3);
+  }
+  @keyframes congratsPop {
+    0% { transform: scale(0.3); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .congrats-box .trophy { font-size: 5rem; display: block; margin-bottom: 16px; }
+  .congrats-box h2 {
+    font-size: 2.4rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, var(--gold), #ffaa00);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+  .congrats-box p {
+    color: var(--text-dim);
+    font-size: 1.1rem;
+    margin-bottom: 24px;
+  }
+
+  .hidden { display: none !important; }
+
+  /* ── Responsive ── */
+  @media (max-width: 600px) {
+    .header h1 { font-size: 1.7rem; }
+    .flashcard-container { height: 260px; }
+    .flashcard-text { font-size: 1.5rem; }
+    .test-country-name { font-size: 1.6rem; }
+    .congrats-box { padding: 30px 24px; margin: 20px; }
+    .congrats-box h2 { font-size: 1.8rem; }
+    .test-input-group { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <h1>🌍 Capitales du Monde</h1>
+    <p>Apprends toutes les capitales, continent par continent</p>
+  </div>
+
+  <!-- SCREEN: HOME -->
+  <div id="screen-home">
+    <div class="continent-grid" id="continent-grid"></div>
+  </div>
+
+  <!-- SCREEN: MODE SELECTION -->
+  <div id="screen-mode" class="hidden">
+    <button class="back-btn" onclick="goHome()">← Retour</button>
+    <h2 style="text-align:center;font-size:1.5rem;margin-bottom:4px;" id="mode-continent-title"></h2>
+    <p style="text-align:center;color:var(--text-dim);font-size:0.9rem;" id="mode-continent-count"></p>
+    <div class="mode-selection">
+      <div class="mode-card revise" onclick="startRevision()">
+        <span class="mode-icon">📚</span>
+        <div class="mode-title">Réviser</div>
+        <div class="mode-desc">Flashcards style Quizlet — apprends à ton rythme</div>
+      </div>
+      <div class="mode-card test" onclick="startTest()">
+        <span class="mode-icon">✍️</span>
+        <div class="mode-title">Test</div>
+        <div class="mode-desc">Écris la capitale — zéro erreur pour réussir</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN: REVISION -->
+  <div id="screen-revision" class="hidden">
+    <button class="back-btn" onclick="goMode()">← Retour</button>
+    <div class="flashcard-area" id="flashcard-area">
+      <div class="progress-bar-container">
+        <div class="progress-info">
+          <span id="rev-progress-text">1 / 10</span>
+          <span id="rev-round-text">Vague 1</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="rev-progress-fill" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="flashcard-container" onclick="flipCard()">
+        <div class="flashcard" id="flashcard">
+          <div class="flashcard-face flashcard-front">
+            <div class="flashcard-label">Pays</div>
+            <div class="flashcard-text" id="fc-front-text"></div>
+            <div class="flashcard-hint">Clique pour voir la capitale</div>
+          </div>
+          <div class="flashcard-face flashcard-back">
+            <div class="flashcard-label">Capitale</div>
+            <div class="flashcard-text" id="fc-back-text"></div>
+          </div>
+        </div>
+      </div>
+      <div class="flashcard-buttons" id="fc-buttons" style="visibility:hidden;">
+        <button class="fc-btn wrong" onclick="markWrong()">✗ Je ne savais pas</button>
+        <button class="fc-btn correct" onclick="markCorrect()">✓ Je savais</button>
+      </div>
+    </div>
+
+    <!-- Round summary -->
+    <div id="round-summary" class="hidden">
+      <div class="round-summary">
+        <h2 id="round-summary-title"></h2>
+        <p id="round-summary-desc"></p>
+        <div class="error-list hidden" id="round-error-list">
+          <h3>❌ À revoir :</h3>
+          <div id="round-error-items"></div>
+        </div>
+        <button class="btn-primary" id="round-next-btn" onclick="nextRound()"></button>
+      </div>
+    </div>
+
+    <!-- Revision complete -->
+    <div id="revision-complete" class="hidden">
+      <div class="revision-complete">
+        <span class="big-emoji">🎉</span>
+        <h2>Révision terminée !</h2>
+        <p>Tu connais toutes les capitales de ce continent.</p>
+        <button class="btn-primary" onclick="goMode()" style="margin-right:10px;">Rejouer</button>
+        <button class="btn-primary" onclick="goHome()" style="background:linear-gradient(135deg,var(--accent2),#e0527a);">Accueil</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN: TEST -->
+  <div id="screen-test" class="hidden">
+    <button class="back-btn" onclick="goMode()">← Retour</button>
+    <div class="test-area">
+      <div class="progress-bar-container">
+        <div class="progress-info">
+          <span id="test-progress-text">0 / 10</span>
+          <span id="test-remaining-text"></span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="test-progress-fill" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="test-question-box">
+        <div class="test-question-label">Quelle est la capitale de…</div>
+        <div class="test-country-name" id="test-country-name"></div>
+      </div>
+      <div class="test-input-group">
+        <input class="test-input" id="test-input" type="text" placeholder="Tape la capitale…" autocomplete="off" />
+        <button class="test-submit" id="test-submit-btn" onclick="submitTestAnswer()">OK</button>
+      </div>
+      <div class="test-feedback" id="test-feedback"></div>
+      <div class="test-score-bar">
+        <span>✓ <b id="test-correct-count">0</b></span>
+        <span>✗ <b id="test-wrong-count">0</b></span>
+        <span>Restant: <b id="test-left-count">0</b></span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Fireworks canvas -->
+<canvas id="fireworksCanvas" class="hidden"></canvas>
+
+<!-- Congrats overlay -->
+<div class="congrats-overlay hidden" id="congrats-overlay">
+  <div class="congrats-box">
+    <span class="trophy">🏆</span>
+    <h2>FÉLICITATIONS !</h2>
+    <p>Tu as réussi toutes les capitales sans erreur !</p>
+    <button class="btn-primary" onclick="closeCongrats()" style="background:linear-gradient(135deg,var(--gold),#ffaa00);color:#000;">Continuer 🎉</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════
+//  DATA — All countries & capitals
+// ══════════════════════════════════════
+const DATA = {
+  "Europe": [
+    ["Albanie","Tirana"],["Allemagne","Berlin"],["Andorre","Andorre-la-Vieille"],
+    ["Autriche","Vienne"],["Belgique","Bruxelles"],["Biélorussie","Minsk"],
+    ["Bosnie-Herzégovine","Sarajevo"],["Bulgarie","Sofia"],["Chypre","Nicosie"],
+    ["Croatie","Zagreb"],["Danemark","Copenhague"],["Espagne","Madrid"],
+    ["Estonie","Tallinn"],["Finlande","Helsinki"],["France","Paris"],
+    ["Grèce","Athènes"],["Hongrie","Budapest"],["Irlande","Dublin"],
+    ["Islande","Reykjavik"],["Italie","Rome"],["Kosovo","Pristina"],
+    ["Lettonie","Riga"],["Liechtenstein","Vaduz"],["Lituanie","Vilnius"],
+    ["Luxembourg","Luxembourg"],["Macédoine du Nord","Skopje"],["Malte","La Valette"],
+    ["Moldavie","Chișinău"],["Monaco","Monaco"],["Monténégro","Podgorica"],
+    ["Norvège","Oslo"],["Pays-Bas","Amsterdam"],["Pologne","Varsovie"],
+    ["Portugal","Lisbonne"],["République tchèque","Prague"],["Roumanie","Bucarest"],
+    ["Royaume-Uni","Londres"],["Russie","Moscou"],["Saint-Marin","Saint-Marin"],
+    ["Serbie","Belgrade"],["Slovaquie","Bratislava"],["Slovénie","Ljubljana"],
+    ["Suède","Stockholm"],["Suisse","Berne"],["Ukraine","Kiev"],
+    ["Vatican","Vatican"]
+  ],
+  "Amérique": [
+    ["Argentine","Buenos Aires"],["Belize","Belmopan"],["Bolivie","Sucre"],
+    ["Brésil","Brasília"],["Canada","Ottawa"],["Chili","Santiago"],
+    ["Colombie","Bogota"],["Costa Rica","San José"],["Cuba","La Havane"],
+    ["Équateur","Quito"],["États-Unis","Washington"],["Guatemala","Guatemala"],
+    ["Guyana","Georgetown"],["Haïti","Port-au-Prince"],["Honduras","Tegucigalpa"],
+    ["Jamaïque","Kingston"],["Mexique","Mexico"],["Nicaragua","Managua"],
+    ["Panama","Panama"],["Paraguay","Asunción"],["Pérou","Lima"],
+    ["République dominicaine","Saint-Domingue"],["Salvador","San Salvador"],
+    ["Suriname","Paramaribo"],["Trinité-et-Tobago","Port-d'Espagne"],
+    ["Uruguay","Montevideo"],["Venezuela","Caracas"]
+  ],
+  "Afrique": [
+    ["Afrique du Sud","Pretoria"],["Algérie","Alger"],["Angola","Luanda"],
+    ["Bénin","Porto-Novo"],["Botswana","Gaborone"],["Burkina Faso","Ouagadougou"],
+    ["Burundi","Gitega"],["Cameroun","Yaoundé"],["Cap-Vert","Praia"],
+    ["Centrafrique","Bangui"],["Comores","Moroni"],["Congo","Brazzaville"],
+    ["Côte d'Ivoire","Yamoussoukro"],["Djibouti","Djibouti"],
+    ["Égypte","Le Caire"],["Érythrée","Asmara"],["Eswatini","Mbabane"],
+    ["Éthiopie","Addis-Abeba"],["Gabon","Libreville"],["Gambie","Banjul"],
+    ["Ghana","Accra"],["Guinée","Conakry"],["Guinée-Bissau","Bissau"],
+    ["Guinée équatoriale","Malabo"],["Kenya","Nairobi"],["Lesotho","Maseru"],
+    ["Liberia","Monrovia"],["Libye","Tripoli"],["Madagascar","Antananarivo"],
+    ["Malawi","Lilongwe"],["Mali","Bamako"],["Maroc","Rabat"],
+    ["Maurice","Port-Louis"],["Mauritanie","Nouakchott"],["Mozambique","Maputo"],
+    ["Namibie","Windhoek"],["Niger","Niamey"],["Nigeria","Abuja"],
+    ["Ouganda","Kampala"],["RD Congo","Kinshasa"],["Rwanda","Kigali"],
+    ["São Tomé-et-Príncipe","São Tomé"],["Sénégal","Dakar"],
+    ["Seychelles","Victoria"],["Sierra Leone","Freetown"],["Somalie","Mogadiscio"],
+    ["Soudan","Khartoum"],["Soudan du Sud","Djouba"],["Tanzanie","Dodoma"],
+    ["Tchad","N'Djaména"],["Togo","Lomé"],["Tunisie","Tunis"],
+    ["Zambie","Lusaka"],["Zimbabwe","Harare"]
+  ],
+  "Asie": [
+    ["Afghanistan","Kaboul"],["Arabie saoudite","Riyad"],["Arménie","Erevan"],
+    ["Azerbaïdjan","Bakou"],["Bahreïn","Manama"],["Bangladesh","Dacca"],
+    ["Bhoutan","Thimphou"],["Birmanie","Naypyidaw"],["Brunei","Bandar Seri Begawan"],
+    ["Cambodge","Phnom Penh"],["Chine","Pékin"],["Corée du Nord","Pyongyang"],
+    ["Corée du Sud","Séoul"],["Émirats arabes unis","Abou Dabi"],
+    ["Géorgie","Tbilissi"],["Inde","New Delhi"],["Indonésie","Jakarta"],
+    ["Irak","Bagdad"],["Iran","Téhéran"],["Israël","Jérusalem"],
+    ["Japon","Tokyo"],["Jordanie","Amman"],["Kazakhstan","Astana"],
+    ["Kirghizistan","Bichkek"],["Koweït","Koweït"],["Laos","Vientiane"],
+    ["Liban","Beyrouth"],["Malaisie","Kuala Lumpur"],["Maldives","Malé"],
+    ["Mongolie","Oulan-Bator"],["Népal","Katmandou"],["Oman","Mascate"],
+    ["Ouzbékistan","Tachkent"],["Pakistan","Islamabad"],["Palestine","Ramallah"],
+    ["Philippines","Manille"],["Qatar","Doha"],["Singapour","Singapour"],
+    ["Sri Lanka","Sri Jayawardenapura-Kotte"],["Syrie","Damas"],
+    ["Tadjikistan","Douchanbé"],["Taïwan","Taipei"],["Thaïlande","Bangkok"],
+    ["Timor oriental","Dili"],["Turkménistan","Achgabat"],["Turquie","Ankara"],
+    ["Viêt Nam","Hanoï"],["Yémen","Sanaa"]
+  ],
+  "Océanie": [
+    ["Australie","Canberra"],["Fidji","Suva"],["Îles Marshall","Majuro"],
+    ["Îles Salomon","Honiara"],["Kiribati","Tarawa-Sud"],
+    ["Micronésie","Palikir"],["Nauru","Yaren"],["Nouvelle-Zélande","Wellington"],
+    ["Palaos","Ngerulmud"],["Papouasie-Nouvelle-Guinée","Port Moresby"],
+    ["Samoa","Apia"],["Tonga","Nukuʻalofa"],["Tuvalu","Funafuti"],
+    ["Vanuatu","Port-Vila"]
+  ],
+  "Caraïbes": [
+    ["Antigua-et-Barbuda","Saint John's"],["Bahamas","Nassau"],
+    ["Barbade","Bridgetown"],["Dominique","Roseau"],
+    ["Grenade","Saint-Georges"],["Saint-Kitts-et-Nevis","Basseterre"],
+    ["Sainte-Lucie","Castries"],["Saint-Vincent-et-les-Grenadines","Kingstown"]
+  ]
+};
+
+const EMOJIS = {
+  "Europe": "🇪🇺", "Amérique": "🌎", "Afrique": "🌍",
+  "Asie": "🌏", "Océanie": "🏝️", "Caraïbes": "🏖️"
+};
+
+// ══════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════
+let currentContinent = null;
+let revCards = [];
+let revIndex = 0;
+let revErrors = [];
+let revRound = 1;
+let revCorrectTotal = 0;
+let revTotalCards = 0;
+
+let testQueue = [];
+let testErrors = [];
+let testCorrect = 0;
+let testWrong = 0;
+let testTotal = 0;
+let testWaiting = false;
+
+// ══════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('#app > div[id^="screen-"]').forEach(s => s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
+
+function goHome() {
+  currentContinent = null;
+  showScreen('screen-home');
+}
+
+function goMode() {
+  showScreen('screen-mode');
+}
+
+// ══════════════════════════════════════
+//  HOME — Continent Grid
+// ══════════════════════════════════════
+function buildHome() {
+  const grid = document.getElementById('continent-grid');
+  grid.innerHTML = '';
+  for (const [name, pairs] of Object.entries(DATA)) {
+    const card = document.createElement('div');
+    card.className = 'continent-card';
+    card.innerHTML = `
+      <span class="continent-emoji">${EMOJIS[name]}</span>
+      <div class="continent-name">${name}</div>
+      <div class="continent-count">${pairs.length} pays</div>
+    `;
+    card.onclick = () => selectContinent(name);
+    grid.appendChild(card);
+  }
+}
+
+function selectContinent(name) {
+  currentContinent = name;
+  document.getElementById('mode-continent-title').textContent = EMOJIS[name] + ' ' + name;
+  document.getElementById('mode-continent-count').textContent = DATA[name].length + ' pays à apprendre';
+  showScreen('screen-mode');
+}
+
+// ══════════════════════════════════════
+//  REVISION — Quizlet-style flashcards
+// ══════════════════════════════════════
+function startRevision() {
+  revCards = shuffle([...DATA[currentContinent]]);
+  revIndex = 0;
+  revErrors = [];
+  revRound = 1;
+  revCorrectTotal = 0;
+  revTotalCards = revCards.length;
+  showScreen('screen-revision');
+  document.getElementById('flashcard-area').classList.remove('hidden');
+  document.getElementById('round-summary').classList.add('hidden');
+  document.getElementById('revision-complete').classList.add('hidden');
+  showFlashcard();
+}
+
+function showFlashcard() {
+  const fc = document.getElementById('flashcard');
+  fc.classList.remove('flipped');
+  document.getElementById('fc-buttons').style.visibility = 'hidden';
+  const pair = revCards[revIndex];
+  document.getElementById('fc-front-text').textContent = pair[0];
+  document.getElementById('fc-back-text').textContent = pair[1];
+
+  const total = revTotalCards;
+  const done = revCorrectTotal + revIndex;
+  document.getElementById('rev-progress-text').textContent = `${revIndex + 1} / ${revCards.length}`;
+  document.getElementById('rev-round-text').textContent = `Vague ${revRound}`;
+  document.getElementById('rev-progress-fill').style.width = `${(revCorrectTotal / revTotalCards) * 100}%`;
+}
+
+function flipCard() {
+  const fc = document.getElementById('flashcard');
+  if (!fc.classList.contains('flipped')) {
+    fc.classList.add('flipped');
+    document.getElementById('fc-buttons').style.visibility = 'visible';
+  }
+}
+
+function markCorrect() {
+  revCorrectTotal++;
+  nextFlashcard();
+}
+
+function markWrong() {
+  revErrors.push(revCards[revIndex]);
+  nextFlashcard();
+}
+
+function nextFlashcard() {
+  revIndex++;
+  if (revIndex >= revCards.length) {
+    showRoundSummary();
+  } else {
+    showFlashcard();
+  }
+}
+
+function showRoundSummary() {
+  document.getElementById('flashcard-area').classList.add('hidden');
+  document.getElementById('round-summary').classList.remove('hidden');
+
+  const correct = revCards.length - revErrors.length;
+  const title = document.getElementById('round-summary-title');
+  const desc = document.getElementById('round-summary-desc');
+  const errorList = document.getElementById('round-error-list');
+  const errorItems = document.getElementById('round-error-items');
+  const btn = document.getElementById('round-next-btn');
+
+  if (revErrors.length === 0) {
+    // All done!
+    document.getElementById('round-summary').classList.add('hidden');
+    document.getElementById('revision-complete').classList.remove('hidden');
+    document.getElementById('rev-progress-fill').style.width = '100%';
+    return;
+  }
+
+  title.textContent = `Vague ${revRound} terminée`;
+  desc.textContent = `${correct} / ${revCards.length} correct — ${revErrors.length} à revoir`;
+
+  errorList.classList.remove('hidden');
+  errorItems.innerHTML = '';
+  revErrors.forEach(([country, capital]) => {
+    const div = document.createElement('div');
+    div.className = 'error-item';
+    div.innerHTML = `<span class="country">${country}</span> → <span class="capital">${capital}</span>`;
+    errorItems.appendChild(div);
+  });
+
+  btn.textContent = `Revoir les ${revErrors.length} erreur${revErrors.length > 1 ? 's' : ''} →`;
+}
+
+function nextRound() {
+  revRound++;
+  revCards = shuffle([...revErrors]);
+  revErrors = [];
+  revIndex = 0;
+  document.getElementById('round-summary').classList.add('hidden');
+  document.getElementById('round-error-list').classList.add('hidden');
+  document.getElementById('flashcard-area').classList.remove('hidden');
+  showFlashcard();
+}
+
+// ══════════════════════════════════════
+//  TEST MODE
+// ══════════════════════════════════════
+function startTest() {
+  testQueue = shuffle([...DATA[currentContinent]]);
+  testErrors = [];
+  testCorrect = 0;
+  testWrong = 0;
+  testTotal = testQueue.length;
+  testWaiting = false;
+  showScreen('screen-test');
+  updateTestUI();
+  showTestQuestion();
+}
+
+function showTestQuestion() {
+  if (testQueue.length === 0) {
+    if (testErrors.length === 0) {
+      // PERFECT — Fireworks!
+      launchFireworks();
+      showCongrats();
+    } else {
+      // Restart with errors
+      testQueue = shuffle([...testErrors]);
+      testErrors = [];
+      testTotal = testQueue.length;
+      testCorrect = 0;
+      testWrong = 0;
+      updateTestUI();
+      showTestQuestion();
+    }
+    return;
+  }
+  const pair = testQueue[0];
+  document.getElementById('test-country-name').textContent = pair[0];
+  document.getElementById('test-input').value = '';
+  document.getElementById('test-input').className = 'test-input';
+  document.getElementById('test-feedback').textContent = '';
+  document.getElementById('test-feedback').className = 'test-feedback';
+  document.getElementById('test-input').focus();
+  testWaiting = false;
+}
+
+function submitTestAnswer() {
+  if (testWaiting) {
+    // Move to next
+    testQueue.shift();
+    testWaiting = false;
+    showTestQuestion();
+    updateTestUI();
+    return;
+  }
+  const input = document.getElementById('test-input');
+  const feedback = document.getElementById('test-feedback');
+  const answer = input.value.trim();
+  if (!answer) return;
+
+  const pair = testQueue[0];
+  const correct = pair[1];
+
+  if (normalize(answer) === normalize(correct)) {
+    input.className = 'test-input correct-input';
+    feedback.textContent = '✓ Correct !';
+    feedback.className = 'test-feedback correct-fb';
+    testCorrect++;
+  } else {
+    input.className = 'test-input wrong-input';
+    feedback.textContent = `✗ La réponse était : ${correct}`;
+    feedback.className = 'test-feedback wrong-fb';
+    testWrong++;
+    testErrors.push(pair);
+  }
+
+  testWaiting = true;
+  document.getElementById('test-submit-btn').textContent = 'Suivant →';
+  updateTestUI();
+
+  // Auto-advance or let user click
+  setTimeout(() => {
+    document.getElementById('test-submit-btn').textContent = 'OK';
+  }, 100);
+}
+
+function updateTestUI() {
+  const done = testCorrect + testWrong;
+  const left = testQueue.length - (testWaiting ? 1 : 0);
+  document.getElementById('test-progress-text').textContent = `${done} / ${testTotal}`;
+  document.getElementById('test-remaining-text').textContent = testErrors.length > 0 ? `⚠ ${testErrors.length} erreur(s)` : '';
+  document.getElementById('test-progress-fill').style.width = `${(done / testTotal) * 100}%`;
+  document.getElementById('test-correct-count').textContent = testCorrect;
+  document.getElementById('test-wrong-count').textContent = testWrong;
+  document.getElementById('test-left-count').textContent = left;
+}
+
+// Key handler
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    const testScreen = document.getElementById('screen-test');
+    if (!testScreen.classList.contains('hidden')) {
+      submitTestAnswer();
+    }
+  }
+});
+
+// ══════════════════════════════════════
+//  FIREWORKS
+// ══════════════════════════════════════
+function launchFireworks() {
+  const canvas = document.getElementById('fireworksCanvas');
+  canvas.classList.remove('hidden');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const particles = [];
+  const colors = ['#ff6584','#6c63ff','#43e97b','#ffd700','#ff9a00','#00d2ff','#ff00ff','#ffffff'];
+  let animFrame;
+
+  function createBurst(x, y) {
+    const count = 80 + Math.random() * 40;
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 2 + Math.random() * 6;
+      particles.push({
+        x, y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 1,
+        decay: 0.008 + Math.random() * 0.015,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        size: 2 + Math.random() * 3,
+        gravity: 0.04 + Math.random() * 0.02
+      });
+    }
+  }
+
+  // Launch several bursts
+  for (let i = 0; i < 5; i++) {
+    setTimeout(() => {
+      createBurst(
+        canvas.width * (0.2 + Math.random() * 0.6),
+        canvas.height * (0.15 + Math.random() * 0.4)
+      );
+    }, i * 400);
+  }
+  // More bursts
+  for (let i = 5; i < 12; i++) {
+    setTimeout(() => {
+      createBurst(
+        canvas.width * (0.1 + Math.random() * 0.8),
+        canvas.height * (0.1 + Math.random() * 0.5)
+      );
+    }, i * 350);
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += p.gravity;
+      p.vx *= 0.99;
+      p.life -= p.decay;
+      if (p.life <= 0) {
+        particles.splice(i, 1);
+        continue;
+      }
+      ctx.globalAlpha = p.life;
+      ctx.fillStyle = p.color;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Trail
+      ctx.globalAlpha = p.life * 0.3;
+      ctx.beginPath();
+      ctx.arc(p.x - p.vx, p.y - p.vy, p.size * p.life * 0.6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    if (particles.length > 0) {
+      animFrame = requestAnimationFrame(animate);
+    } else {
+      canvas.classList.add('hidden');
+    }
+  }
+  animate();
+
+  // Auto-cleanup after 6s
+  setTimeout(() => {
+    cancelAnimationFrame(animFrame);
+    canvas.classList.add('hidden');
+    particles.length = 0;
+  }, 6000);
+}
+
+function showCongrats() {
+  document.getElementById('congrats-overlay').classList.remove('hidden');
+}
+
+function closeCongrats() {
+  document.getElementById('congrats-overlay').classList.add('hidden');
+  goMode();
+}
+
+// ══════════════════════════════════════
+//  UTILITIES
+// ══════════════════════════════════════
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function normalize(str) {
+  return str.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9 ]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// ══════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════
+buildHome();
+</script>
+</body>
+</html>
